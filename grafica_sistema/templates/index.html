@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRÁFICA KL - Painel de Controle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex shrink-0">
+            <div class="p-5">
+                <div class="flex items-center gap-2 mb-8">
+                    <i data-lucide="printer" class="text-blue-400 w-8 h-8"></i>
+                    <span class="text-xl font-black tracking-wider text-blue-100">GRÁFICA KL</span>
+                </div>
+                <nav class="space-y-1">
+                    <button onclick="switchTab('dashboard')" id="btn-dashboard" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg bg-blue-600 text-white"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard</button>
+                    <button onclick="switchTab('cliente_balcao')" id="btn-cliente_balcao" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold rounded-lg text-emerald-400 bg-emerald-950/40 hover:bg-emerald-900/60"><i data-lucide="shopping-bag" class="w-4 h-4"></i> 🛒 ÁREA DO CLIENTE</button>
+                    <button onclick="switchTab('calculadora_inteligente')" id="btn-calculadora_inteligente" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"><i data-lucide="calculator" class="w-4 h-4"></i> Precificação Inteligente</button>
+                    <button onclick="switchTab('ordens')" id="btn-ordens" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"><i data-lucide="file-text" class="w-4 h-4"></i> Ordens de Serviço (O.S.)</button>
+                    <button onclick="switchTab('estoque')" id="btn-estoque" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"><i data-lucide="package" class="w-4 h-4"></i> Estoque Insumos</button>
+                    <button onclick="switchTab('catalogo_adm')" id="btn-catalogo_adm" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"><i data-lucide="book-open" class="w-4 h-4"></i> Gerenciar Catálogo</button>
+                    <button onclick="switchTab('financeiro')" id="btn-financeiro" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"><i data-lucide="dollar-sign" class="w-4 h-4"></i> Fluxo de Caixa</button>
+                    <button onclick="switchTab('clientes')" id="btn-clientes" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"><i data-lucide="users" class="w-4 h-4"></i> Clientes</button>
+                    <button onclick="switchTab('seguranca')" id="btn-seguranca" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"><i data-lucide="shield-alert" class="w-4 h-4"></i> Acesso e Senha</button>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-slate-800">
+                <div class="text-xs text-slate-400 mb-2">Operador: <b>{{ usuario_atual }}</b></div>
+                <a href="/logout" class="flex items-center gap-2 text-xs font-bold text-rose-400 hover:text-rose-300"><i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sair</a>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            <header class="bg-white border-b border-gray-200 h-14 flex items-center px-6 sticky top-0 z-10 justify-between">
+                <h1 id="page-title" class="text-lg font-bold text-gray-800">Painel de Gestão - GRÁFICA KL</h1>
+                <button onclick="switchTab('cliente_balcao')" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-2"><i data-lucide="monitor"></i> Virar Tela para o Cliente</button>
+            </header>
+
+            <div class="p-6 max-w-7xl w-full mx-auto space-y-6">
+
+                <section id="tab-dashboard" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between">
+                            <div><p class="text-xs font-semibold text-gray-400 uppercase">Entradas</p><h3 class="text-2xl font-black text-emerald-600 mt-1">R$ {{ "%.2f"|format(entradas) }}</h3></div>
+                            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg"><i data-lucide="trending-up"></i></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between">
+                            <div><p class="text-xs font-semibold text-gray-400 uppercase">Saídas</p><h3 class="text-2xl font-black text-rose-600 mt-1">R$ {{ "%.2f"|format(saidas) }}</h3></div>
+                            <div class="p-3 bg-rose-50 text-rose-600 rounded-lg"><i data-lucide="trending-down"></i></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border shadow-sm flex items-center justify-between">
+                            <div><p class="text-xs font-semibold text-gray-400 uppercase">Saldo Operacional</p><h3 class="text-2xl font-black text-slate-800 mt-1">R$ {{ "%.2f"|format(saldo) }}</h3></div>
+                            <div class="p-3 bg-slate-100 text-slate-700 rounded-lg"><i data-lucide="wallet"></i></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="tab-cliente_balcao" class="hidden grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="xl:col-span-2 space-y-4">
+                        <div class="bg-emerald-600 text-white p-4 rounded-xl shadow-sm">
+                            <h2 class="text-lg font-black flex items-center gap-2"><i data-lucide="smile"></i> Olá! Monte o seu pedido na GRÁFICA KL</h2>
+                            <p class="text-xs text-emerald-100 mt-0.5">Escolha os produtos do catálogo abaixo e adicione tudo no seu carrinho.</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {% for item in catalogo %}
+                            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col justify-between">
+                                <div class="w-full h-40 bg-gray-100 border-b border-gray-100 overflow-hidden relative">
+                                    <img src="/static/{{ item.foto }}" alt="{{ item.produto }}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300?text=Sem+Foto'">
+                                </div>
+                                <div class="p-4 flex flex-col justify-between flex-1 gap-2">
+                                    <div>
+                                        <h4 class="font-bold text-gray-800 text-sm line-clamp-1">{{ item.produto }}</h4>
+                                        <p class="text-[11px] text-slate-400 font-medium line-clamp-1">Variação: {{ item.modelo }}</p>
+                                    </div>
+                                    <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
+                                        <span class="text-base font-black text-emerald-700">R$ {{ "%.2f"|format(item.preco_venda) }}</span>
+                                        <button onclick="adicionarAoCarrinho('{{ item.produto }}', '{{ item.modelo }}', {{ item.preco_venda }})" class="bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg">
+                                            + Carrinho
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-2">
+                            <h3 class="font-bold text-gray-700 text-sm flex items-center gap-1"><i data-lucide="palette" class="text-purple-500"></i> Quer algo Personalizado do seu jeito?</h3>
+                            <p class="text-xs text-gray-400">Descreva abaixo sua ideia (Cores, tema, textos, logotipos ou acabamento que deseja):</p>
+                            <textarea id="cliente-ideia" rows="3" placeholder="Ex: Quero uma arte para aniversário infantil com o tema Astronauta..." class="w-full p-3 border border-gray-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="xl:col-span-1 space-y-4">
+                        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
+                            <h3 class="font-black text-gray-800 border-b pb-2 flex justify-between items-center">
+                                <span>🛒 Seu Carrinho</span>
+                                <span id="carrinho-contador" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded-full">0 itens</span>
+                            </h3>
+                            <div id="carrinho-lista" class="space-y-2 max-h-60 overflow-y-auto divide-y divide-gray-100 pr-1">
+                                <p class="text-xs text-gray-400 text-center py-4">Seu carrinho está vazio.</p>
+                            </div>
+                            <div class="border-t pt-4 space-y-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500">Quem é Você? (Selecione seu Nome)</label>
+                                    <select id="pedido-cliente-id" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-1 bg-white">
+                                        {% for c in clientes %} <option value="{{ c.id }}">{{ c.nome }}</option> {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="flex justify-between items-center text-lg font-black text-gray-800 pt-2">
+                                    <span>Total Geral:</span>
+                                    <span id="carrinho-total" class="text-emerald-600 text-xl">R$ 0,00</span>
+                                </div>
+                                <button onclick="finalizarPedidoCliente()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm shadow-md">
+                                    🚀 Confirmar e Enviar Pedido
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="tab-calculadora_inteligente" class="hidden grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div class="xl:col-span-1 space-y-6">
+                        <form action="/config/salvar" method="POST" class="bg-white p-5 rounded-xl border shadow-sm space-y-3">
+                            <h3 class="font-bold text-gray-700 border-b pb-2 flex items-center gap-2"><i data-lucide="sliders" class="text-blue-500"></i> Seus Custos de Negócio</h3>
+                            <div><label class="block text-xs font-medium text-gray-500">Seu Salário Desejado (R$)</label><input type="number" name="salario" value="{{ custos_config.salario }}" step="0.01" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-0.5"></div>
+                            <div><label class="block text-xs font-medium text-gray-500">Custos Fixos Totais</label><input type="number" name="custo_fixo" value="{{ custos_config.custo_fixo }}" step="0.01" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-0.5"></div>
+                            <div><label class="block text-xs font-medium text-gray-500">Horas Úteis/Mês</label><input type="number" name="horas" value="{{ custos_config.horas }}" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-0.5"></div>
+                            <button type="submit" class="w-full bg-slate-800 text-white text-xs font-bold py-2 rounded-md">Atualizar Valores</button>
+                        </form>
+                        
+                        <div class="bg-white p-5 rounded-xl border shadow-sm space-y-4">
+                            <h3 class="font-bold text-gray-700 border-b pb-2">Simular Serviço</h3>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500">Escolha o Insumo</label>
+                                <select id="calc-insumo" class="w-full p-2 border border-gray-300 rounded-md bg-white text-sm mt-0.5">
+                                    {% for item in estoque %} 
+                                    <option value="{{ item.id }}" data-custo="{{ item.custo_unitario }}">{{ item.nome }} (R$ {{ "%.2f"|format(item.custo_unitario) }})</option> 
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div><label class="block text-xs font-medium text-gray-500">Quantidade Usada</label><input type="number" id="calc-insumo-qtd" value="1" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-0.5"></div>
+                            <div><label class="block text-xs font-medium text-gray-500">Tempo de Produção (Minutos)</label><input type="number" id="calc-tempo-minutos" value="15" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-0.5"></div>
+                            <div><label class="block text-xs font-medium text-gray-500">Margem de Lucro (%)</label><input type="number" id="calc-margem-lucro" value="50" class="w-full p-2 border border-gray-300 rounded-md text-sm mt-0.5"></div>
+                            <button onclick="calcularOrcamentoInteligente()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 rounded-md">Calcular Preço</button>
+                        </div>
+                    </div>
+                    
+                    <div class="xl:col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-xl border shadow-sm space-y-6" id="painel-orcamento-impressao">
+                            <div class="flex justify-between items-center border-b pb-3">
+                                <h3 class="font-black text-xl text-gray-800">Relatório do Orçamento</h3>
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold">GRÁFICA KL</span>
+                            </div>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between text-gray-600"><span>Custo de Material direto do Estoque:</span><span id="res-material-real" class="font-bold text-gray-800">R$ 0,00</span></div>
+                                <div class="flex justify-between text-gray-600"><span>Custo Proporcional de Mão de Obra + Custo Fixo:</span><span id="res-tempo-real" class="font-bold text-gray-800">R$ 0,00</span></div>
+                                <div class="flex justify-between text-gray-600 font-semibold border-t pt-2"><span>Custo de Fabricação Total:</span><span id="res-custo-fabricacao" class="text-gray-900">R$ 0,00</span></div>
+                                
+                                <div class="p-4 bg-emerald-50 rounded-lg flex justify-between items-center text-lg mt-6 border border-emerald-200">
+                                    <span class="text-emerald-800 font-black">Preço Mínimo de Venda Recomendado:</span>
+                                    <span id="res-preco-venda-sugerido" class="text-2xl font-black text-emerald-700">R$ 0,00</span>
+                                </div>
+                            </div>
+
+                            <div class="border-t pt-4 space-y-4 bg-slate-50 p-4 rounded-xl border border-gray-200">
+                                <h4 class="font-bold text-sm text-gray-700 flex items-center gap-1">Transformar Orçamento em Ordem de Serviço Ativa:</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Vincular Cliente</label>
+                                        <select id="orc-cliente-id" class="w-full p-2 border border-gray-300 rounded-md text-sm bg-white">
+                                            {% for c in clientes %} <option value="{{ c.id }}">{{ c.nome }}</option> {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Nome do Serviço (Ex: 100 Envelopes)</label>
+                                        <input type="text" id="orc-nome-servico" placeholder="Ex: Panfletos de Balcão" class="w-full p-2 border border-gray-300 rounded-md text-sm bg-white">
+                                    </div>
+                                </div>
+                                <div class="flex gap-3">
+                                    <button onclick="lancarOrcamentoComoOS()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm">
+                                        <i data-lucide="check-circle" class="w-4 h-4"></i> Aprovar e Lançar
+                                    </button>
+                                    <button onclick="gerarPdfOrcamento()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2">
+                                        <i data-lucide="download" class="w-4 h-4"></i> Salvar PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="tab-ordens" class="hidden bg-white rounded-xl border shadow-sm overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">
+                            <tr><th class="p-4">O.S.</th><th class="p-4">Cliente</th><th class="p-4">Detalhes do Pedido</th><th class="p-4">Valor Total</th><th class="p-4">Status</th><th class="p-4 text-center">Ações</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-sm">
+                            {% for os in ordens %}
+                            <tr>
+                                <td class="p-4 font-bold text-blue-600">#{{ os.id }}</td>
+                                <td class="p-4 font-semibold">{{ os.cliente }}</td>
+                                <td class="p-4 text-gray-600 max-w-lg break-words">{{ os.descricao }}</td>
+                                <td class="p-4 font-bold text-gray-900">R$ {{ "%.2f"|format(os.valor_total) }}</td>
+                                <td class="p-4"><span class="px-2 py-0.5 rounded text-xs font-bold {% if os.status == 'Pendente' %}bg-amber-50 text-amber-700{% elif os.status == 'Impressão' %}bg-blue-50 text-blue-700{% else %}bg-emerald-50 text-emerald-700{% endif %}">{{ os.status }}</span></td>
+                                <td class="p-4 flex justify-center"><button onclick="mudarStatusOS('{{ os.id }}', 'Pronto')" class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded text-xs font-bold">Pronto</button></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="tab-estoque" class="hidden space-y-6">
+                    <form action="/estoque/adicionar" method="POST" class="bg-white p-5 rounded-xl border shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div><label class="text-xs font-bold text-gray-500">Nome do Insumo</label><input type="text" name="nome" placeholder="Ex: Papel Fotográfico A4" required class="w-full p-2 border rounded-md text-sm mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500">Qtd Inicial</label><input type="number" name="quantidade" placeholder="Ex: 100" required class="w-full p-2 border rounded-md text-sm mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500">Unidade (un, m, kg)</label><input type="text" name="unidade" placeholder="Ex: fls" required class="w-full p-2 border rounded-md text-sm mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500">Custo Unitário (R$)</label><input type="number" name="custo_unitario" step="0.001" placeholder="Ex: 0.45" required class="w-full p-2 border rounded-md text-sm mt-1"></div>
+                        <button type="submit" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-md text-sm md:col-span-4">Cadastrar Insumo</button>
+                    </form>
+                    
+                    <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 text-xs font-bold text-gray-500 border-b uppercase">
+                                <tr><th class="p-4">Material</th><th class="p-4 text-center">Quantidade</th><th class="p-4 text-center">Custo Unitário</th><th class="p-4 text-center">Ações</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+                                {% for item in estoque %}
+                                <tr>
+                                    <td class="p-4 font-bold text-gray-700">{{ item.nome }}</td>
+                                    <td class="p-4 text-center font-black text-slate-700">{{ item.quantidade }} {{ item.unidade }}</td>
+                                    <td class="p-4 text-center text-gray-600">R$ {{ "%.2f"|format(item.custo_unitario) }}</td>
+                                    <td class="p-4 flex justify-center gap-2">
+                                        <button onclick="ajustarEstoque('{{ item.id }}', 50)" class="bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold hover:bg-emerald-100">+50</button>
+                                        <button onclick="ajustarEstoque('{{ item.id }}', -50)" class="bg-rose-50 text-rose-600 px-3 py-1 rounded font-bold hover:bg-rose-100">-50</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="tab-catalogo_adm" class="hidden space-y-6">
+                    <form action="/catalogo/adicionar" method="POST" enctype="multipart/form-data" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div class="md:col-span-2"><label class="text-xs font-bold text-gray-500">Nome do Produto</label><input type="text" name="produto" placeholder="Ex: Caneca" required class="w-full p-2 border rounded-md text-sm mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500">Modelo/Variação</label><input type="text" name="modelo" placeholder="Ex: Porcelana" required class="w-full p-2 border rounded-md text-sm mt-1"></div>
+                        <div><label class="text-xs font-bold text-gray-500">Preço de Venda (R$)</label><input type="number" name="preco_venda" step="0.01" required class="w-full p-2 border rounded-md text-sm mt-1"></div>
+                        <div class="md:col-span-2">
+                            <label class="text-xs font-bold text-gray-500 block mb-1">Foto do Produto</label>
+                            <input type="file" name="foto_arquivo" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                        </div>
+                        <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-md text-sm md:col-span-2">Cadastrar no Catálogo</button>
+                    </form>
+                    
+                    <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 text-xs font-bold text-gray-500 border-b uppercase">
+                                <tr><th class="p-4">Foto</th><th class="p-4">Produto</th><th class="p-4">Modelo</th><th class="p-4 text-right">Preço de Venda</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+                                {% for item in catalogo %}
+                                <tr>
+                                    <td class="p-2"><img src="/static/{{ item.foto }}" class="w-12 h-12 object-cover rounded border" onerror="this.src='https://placehold.co/50x50?text=Sem+Foto'"></td>
+                                    <td class="p-4 font-bold text-gray-700">{{ item.produto }}</td>
+                                    <td class="p-4 text-gray-500">{{ item.modelo }}</td>
+                                    <td class="p-4 text-right font-bold text-emerald-600">R$ {{ "%.2f"|format(item.preco_venda) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="tab-financeiro" class="hidden space-y-6">
+                    <form action="/financeiro/adicionar" method="POST" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div class="md:col-span-2">
+                            <label class="text-xs font-bold text-gray-500">Descrição do Lançamento</label>
+                            <input type="text" name="descricao" placeholder="Ex: Compra de tintas Epson ou Venda balcão" required class="w-full p-2 border rounded-md text-sm mt-1">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">Valor (R$)</label>
+                            <input type="number" name="valor" step="0.01" placeholder="0.00" required class="w-full p-2 border rounded-md text-sm mt-1">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">Tipo Movimentação</label>
+                            <select name="tipo" class="w-full p-2 border rounded-md text-sm mt-1 bg-white">
+                                <option value="entrada">Entrada (+)</option>
+                                <option value="saida">Saída (-)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-md text-sm md:col-span-4">Lançar no Caixa</button>
+                    </form>
+
+                    <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 text-xs font-bold text-gray-500 border-b uppercase">
+                                <tr><th class="p-4">Data</th><th class="p-4">Descrição</th><th class="p-4">Tipo</th><th class="p-4 text-right">Valor</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+                                {% for t in financeiro %}
+                                <tr>
+                                    <td class="p-4 text-gray-400 text-xs">{{ t.data }}</td>
+                                    <td class="p-4 font-medium text-gray-700">{{ t.descricao }}</td>
+                                    <td class="p-4"><span class="px-2 py-0.5 rounded text-xs font-bold {% if t.tipo == 'entrada' %}bg-emerald-50 text-emerald-700{% else %}bg-rose-50 text-rose-700{% endif %}">{{ t.tipo|upper }}</span></td>
+                                    <td class="p-4 text-right font-bold {% if t.tipo == 'entrada' %}text-emerald-600{% else %}text-rose-600{% endif %}">R$ {{ '%.2f'|format(t.valor) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="tab-clientes" class="hidden space-y-6">
+                    <form action="/cliente/adicionar" method="POST" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">Nome do Cliente</label>
+                            <input type="text" name="nome" placeholder="Ex: João Silva" required class="w-full p-2 border rounded-md text-sm mt-1">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">WhatsApp (com DDD)</label>
+                            <input type="text" name="whatsapp" placeholder="Ex: 81999998888" required class="w-full p-2 border rounded-md text-sm mt-1">
+                        </div>
+                        <button type="submit" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-md text-sm">Cadastrar Cliente</button>
+                    </form>
+
+                    <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 text-xs font-bold text-gray-500 border-b uppercase">
+                                <tr><th class="p-4">ID</th><th class="p-4">Nome do Cliente</th><th class="p-4">WhatsApp</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+                                {% for c in clientes %}
+                                <tr>
+                                    <td class="p-4 text-blue-600 font-bold">#{{ c.id }}</td>
+                                    <td class="p-4 font-bold text-gray-700">{{ c.nome }}</td>
+                                    <td class="p-4 text-gray-500 font-medium">{{ c.whatsapp }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="tab-seguranca" class="hidden max-w-xl bg-white p-6 rounded-xl border shadow-sm space-y-4">
+                    <form action="/config/usuario" method="POST" class="space-y-4">
+                        <div><label class="block text-xs font-bold text-gray-500">Usuário</label><input type="text" name="novo_usuario" value="{{ usuario_atual }}" required class="w-full p-2 border rounded-md text-sm mt-1"></div>
+                        <div><label class="block text-xs font-bold text-gray-500">Nova Senha</label><input type="password" name="nova_senha" placeholder="Branco para não alterar" class="w-full p-2 border rounded-md text-sm mt-1"></div>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-md text-sm">Salvar Dados de Acesso</button>
+                    </form>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const VALOR_CUSTO_HORA = {{ custo_hora }};
+        let carrinho = [];
+        let ultimoPrecoSugerido = 0; // Armazena o valor gerado pelo cálculo para usar na O.S.
+
+        function switchTab(tabId) {
+            ['dashboard', 'cliente_balcao', 'calculadora_inteligente', 'ordens', 'estoque', 'catalogo_adm', 'financeiro', 'clientes', 'seguranca'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`btn-${t}`).classList.remove('bg-blue-600', 'text-white', 'bg-emerald-600');
+                if(t === 'cliente_balcao') document.getElementById(`btn-${t}`).classList.add('text-emerald-400');
+                else document.getElementById(`btn-${t}`).classList.add('text-slate-400');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`btn-${tabId}`).classList.add(tabId === 'cliente_balcao' ? 'bg-emerald-600' : 'bg-blue-600', 'text-white');
+            window.location.hash = tabId;
+        }
+
+        function calcularOrcamentoInteligente() {
+            const selectInsumo = document.getElementById('calc-insumo');
+            if(!selectInsumo || selectInsumo.selectedIndex === -1) { alert("Por favor, cadastre um insumo no estoque primeiro!"); return; }
+            const custoUnitarioMaterial = parseFloat(selectInsumo.options[selectInsumo.selectedIndex].getAttribute('data-custo') || 0);
+            const qtdUsada = parseFloat(document.getElementById('calc-insumo-qtd').value || 0);
+            const tempoMinutos = parseFloat(document.getElementById('calc-tempo-minutos').value || 0);
+            const margemLucro = parseFloat(document.getElementById('calc-margem-lucro').value || 0);
+            
+            const custoTotalMaterial = custoUnitarioMaterial * qtdUsada;
+            const custoTempoTrabalho = (VALOR_CUSTO_HORA / 60) * tempoMinutos;
+            const custoTotalProducao = custoTotalMaterial + custoTempoTrabalho;
+            const precoVendaSugerido = custoTotalProducao * (1 + (margemLucro / 100));
+            
+            ultimoPrecoSugerido = precoVendaSugerido; // Salva globalmente
+
+            document.getElementById('res-material-real').innerText = 'R$ ' + custoTotalMaterial.toFixed(2).replace('.', ',');
+            document.getElementById('res-tempo-real').innerText = 'R$ ' + custoTempoTrabalho.toFixed(2).replace('.', ',');
+            document.getElementById('res-custo-fabricacao').innerText = 'R$ ' + custoTotalProducao.toFixed(2).replace('.', ',');
+            document.getElementById('res-preco-venda-sugerido').innerText = 'R$ ' + precoVendaSugerido.toFixed(2).replace('.', ',');
+        }
+
+        // NOVA FUNÇÃO: LANÇAR O ORÇAMENTO DIRETAMENTE COMO O.S. E FINANCEIRO
+        function lancarOrcamentoComoOS() {
+            const clienteId = document.getElementById('orc-cliente-id').value;
+            const nomeServico = document.getElementById('orc-nome-servico').value.trim();
+            
+            if(ultimoPrecoSugerido <= 0) { alert('Por favor, faça um cálculo de preço válido primeiro!'); return; }
+            if(!nomeServico) { alert('Digite o Nome do Serviço antes de aprovar!'); return; }
+
+            fetch('/cliente_pedido/enviar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    cliente_id: clienteId, 
+                    itens: [{ nome: nomeServico, modelo: 'Calculadora', qtd: 1, preco: ultimoPrecoSugerido }], 
+                    ideia_personalizado: 'Orçamento calculado via painel administrativo.', 
+                    valor_total: ultimoPrecoSugerido 
+                })
+            }).then(res => res.json()).then(data => { 
+                if(data.success) { 
+                    alert('Orçamento aprovado e enviado para as Ordens de Serviço!'); 
+                    document.getElementById('orc-nome-servico').value = ''; 
+                    switchTab('ordens'); 
+                    window.location.reload(); 
+                } 
+            });
+        }
+
+        function gerarPdfOrcamento() {
+            const elemento = document.getElementById('painel-orcamento-impressao');
+            const opcoes = { margin: 1, filename: 'Orcamento_KL.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+            html2pdf().from(elemento).set(opcoes).save();
+        }
+
+        function adicionarAoCarrinho(nome, modelo, preco) {
+            const itemExistente = carrinho.find(i => i.nome === nome && i.modelo === modelo);
+            if(itemExistente) { itemExistente.qtd += 1; } 
+            else { carrinho.push({ nome: nome, modelo: modelo, preco: preco, qtd: 1 }); }
+            atualizarInterfaceCarrinho();
+        }
+
+        function removerDoCarrinho(index) { carrinho.splice(index, 1); atualizarInterfaceCarrinho(); }
+
+        function atualizarInterfaceCarrinho() {
+            const lista = document.getElementById('carrinho-lista');
+            const totalTexto = document.getElementById('carrinho-total');
+            const contador = document.getElementById('carrinho-contador');
+            if(carrinho.length === 0) {
+                lista.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Seu carrinho está vazio.</p>';
+                totalTexto.innerText = 'R$ 0,00';
+                contador.innerText = '0 itens';
+                return;
+            }
+            lista.innerHTML = '';
+            let totalGeral = 0, totalItens = 0;
+            carrinho.forEach((item, idx) => {
+                const subtotal = item.preco * item.qtd;
+                totalGeral += subtotal; totalItens += item.qtd;
+                lista.innerHTML += `<div class="flex justify-between items-start py-2 text-xs"><div><p class="font-bold text-gray-800">${item.nome}</p><p class="text-[10px] text-gray-400">${item.modelo} (${item.qtd}x)</p></div><div class="text-right flex items-center gap-2"><span class="font-black text-gray-700">R$ ${subtotal.toFixed(2)}</span><button onclick="removerDoCarrinho(${idx})" class="text-rose-500 font-bold">X</button></div></div>`;
+            });
+            totalTexto.innerText = 'R$ ' + totalGeral.toFixed(2);
+            contador.innerText = `${totalItens} itens`;
+        }
+
+        function finalizarPedidoCliente() {
+            const clienteId = document.getElementById('pedido-cliente-id').value;
+            const ideia = document.getElementById('cliente-ideia').value;
+            if(carrinho.length === 0 && !ideia.trim()) { alert('Carrinho vazio ou sem ideia descrita!'); return; }
+            let totalGeral = carrinho.reduce((acc, curr) => acc + (curr.preco * curr.qtd), 0);
+            fetch('/cliente_pedido/enviar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cliente_id: clienteId, itens: carrinho, ideia_personalizado: ideia, valor_total: totalGeral })
+            }).then(res => res.json()).then(data => { if(data.success) { alert('Pedido enviado!'); carrinho = []; document.getElementById('cliente-ideia').value = ''; atualizarInterfaceCarrinho(); switchTab('ordens'); window.location.reload(); } });
+        }
+
+        function mudarStatusOS(id, status) { fetch(`/os/status/${id}/${status}`, { method: 'POST' }).then(() => window.location.reload()); }
+        function ajustarEstoque(id, valor) { fetch(`/estoque/alterar/${id}/${valor}`, { method: 'POST' }).then(() => window.location.reload()); }
+        window.onload = () => { lucide.createIcons(); if(window.location.hash) switchTab(window.location.hash.substring(1)); };
+    </script>
+</body>
+</html>
